@@ -77,31 +77,19 @@ jobs:
         run: python ci/pipeline_smoke_test.py
         timeout-minutes: 15
 
-  # ── Deploy: trigger Streamlit Cloud redeploy via deploy hook ──────────
+  # ── Deploy: instructions for Streamlit Cloud auto-deploy ─────────────
   # Streamlit Cloud auto-deploys from the connected branch on every push,
-  # so this job is optional. Set the STREAMLIT_DEPLOY_HOOK secret for manual
-  # redeploy triggers (e.g., from a workflow_dispatch or after CI passes).
+  # so no explicit deploy hook is required. To add one later, set the
+  # STREAMLIT_DEPLOY_HOOK secret in GitHub repo Settings -> Secrets -> Actions.
   deploy:
     if: github.ref == 'refs/heads/main' && success()
     runs-on: ubuntu-latest
     needs: [lint, pipeline]
 
     steps:
-      - name: Trigger Streamlit Cloud redeploy
-        if: ${{ secrets.STREAMLIT_DEPLOY_HOOK != '' }}
+      - name: Auto-deploy status
         run: |
-          echo "Triggering Streamlit Cloud redeploy..."
-          curl -s -X POST "${{ secrets.STREAMLIT_DEPLOY_HOOK }}" \
-            -H "Accept: application/json" \
-            --connect-timeout 10 --max-time 60
-          echo ""
-          echo "Redeploy triggered successfully."
-
-      - name: No deploy hook configured
-        if: ${{ secrets.STREAMLIT_DEPLOY_HOOK == '' }}
-        run: |
-          echo "No STREAMLIT_DEPLOY_HOOK secret configured."
-          echo "Streamlit Cloud auto-deploys from the connected branch on every push."
+          echo "::notice::CI checks passed. Streamlit Cloud auto-deploys from main."
           echo ""
           echo "To add a deploy hook for manual triggering:"
           echo "  1. Go to share.streamlit.io -> your app -> Settings -> Deploy Hooks"
