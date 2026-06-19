@@ -41,57 +41,8 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Python syntax check (all .py files)
-        run: |
-          echo "Checking Python syntax..."
-          python -c "
-import ast, sys, os
-errors = 0
-for root, dirs, files in os.walk('.'):
-    dirs[:] = [d for d in dirs if d not in ('.git', '__pycache__', '.venv', 'node_modules')]
-    for f in files:
-        if not f.endswith('.py'):
-            continue
-        path = os.path.join(root, f)
-        try:
-            ast.parse(open(path, encoding='utf-8').read())
-        except SyntaxError as e:
-            print(f'ERROR: {path} — {e}')
-            errors += 1
-if errors:
-    sys.exit(1)
-print(f'  All Python files passed syntax check.')
-"
-
-      - name: Import validation
-        run: |
-          echo "Validating imports..."
-          python -c "
-from utils.data_loader import load_data, get_data_info
-from utils.preprocessing import clean_data, create_customer_summary
-from utils.segmentation import calculate_rfm_scores, label_segments_rfm, get_segment_summary, perform_kmeans_clustering, find_optimal_k
-from utils.predictive import compute_clv, compute_churn_probability, compute_mom_metrics, engineer_features
-from utils.ui_components import hero_header, section_header
-from utils.report_generator import generate_report
-print('  All imports validated successfully.')
-"
-
-      - name: Streamlit config check
-        run: |
-          echo "Verifying Streamlit entry point..."
-          if [ ! -f "app.py" ]; then
-            echo "ERROR: app.py not found!"
-            exit 1
-          fi
-          python -c "
-import ast
-tree = ast.parse(open('app.py', encoding='utf-8').read())
-calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and getattr(n.func, 'attr', None) == 'set_page_config']
-if calls:
-    print('  st.set_page_config() found — entry point OK')
-else:
-    print('  WARNING: st.set_page_config() not found in app.py')
-"
+      - name: Run lint checks
+        run: python ci/lint_check.py
 
   # ── Pipeline smoke test: load data, RFM, train ML models ──────────────
   pipeline:
@@ -114,7 +65,6 @@ else:
         with:
           path: data/online_retail_II.parquet
           key: uci-online-retail-v1
-          # Invalidate cache if requirements change (ucimlrepo version may affect data)
           restore-keys: |
             uci-online-retail-
 
@@ -123,56 +73,8 @@ else:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run full pipeline smoke test
-        run: |
-          python -c "
-import time, sys
-sys.path.insert(0, '.')
-
-from utils.data_loader import load_data
-from utils.preprocessing import clean_data, create_customer_summary
-from utils.segmentation import calculate_rfm_scores, label_segments_rfm, get_segment_summary
-from utils.predictive import compute_clv, compute_churn_probability, compute_mom_metrics
-
-print('1/6 Loading data...')
-raw = load_data()
-print(f'   {len(raw):,} transactions')
-
-print('2/6 Cleaning data...')
-clean = clean_data(raw)
-print(f'   {len(clean):,} transactions')
-
-print('3/6 Creating customer summary...')
-customers = create_customer_summary(clean)
-print(f'   {len(customers):,} customers')
-
-print('4/6 Computing RFM scores and segments...')
-customers = calculate_rfm_scores(customers)
-customers = label_segments_rfm(customers)
-summary = get_segment_summary(customers)
-print(f'   {summary[\"Segment\"].nunique()} segments')
-
-print('5/6 Training ML models...')
-clv = compute_clv(customers, clean)
-churn = compute_churn_probability(customers, clean)
-clv_r2 = clv.attrs['model_metrics']['r2']
-churn_auc = churn.attrs['churn_model_metrics']['auc']
-print(f'   CLV R²={clv_r2}, Churn AUC={churn_auc}')
-
-print('6/6 Computing MoM metrics...')
-mom = compute_mom_metrics(clean)
-print(f'   {len(mom[\"monthly_data\"])} months')
-
-print()
-print('=' * 50)
-print('ALL PIPELINE STEPS PASSED')
-print(f'   Transactions: {len(raw):,} -> Cleaned: {len(clean):,}')
-print(f'   Customers: {len(customers):,}')
-print(f'   Segments: {summary[\"Segment\"].nunique()}')
-print(f'   CLV R²: {clv_r2}')
-print(f'   Churn AUC: {churn_auc}')
-print('=' * 50)
-"
+      - name: Run pipeline smoke test
+        run: python ci/pipeline_smoke_test.py
         timeout-minutes: 15
 
   # ── Deploy: trigger Streamlit Cloud redeploy via deploy hook ──────────

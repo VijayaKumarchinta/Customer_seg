@@ -12,7 +12,7 @@
 
 **Analyze 1M+ real transactions from a UK-based online retailer. Segment customers by behavioral patterns using RFM analysis and K-Means clustering, and get data-driven marketing recommendations — all in an interactive dashboard.**
 
-[🚀 Live Demo](https://your-app.streamlit.app) · [📖 Dataset Details](https://archive.ics.uci.edu/dataset/502/online+retail+ii) · [🐛 Report Bug](https://github.com/your-username/customer-segmentation-dashboard/issues)
+[🚀 Live Demo](https://customersegme.streamlit.app/) · [📖 Dataset Details](https://archive.ics.uci.edu/dataset/502/online+retail+ii) · [🐛 Report Bug](https://github.com/your-username/customer-segmentation-dashboard/issues)
 
 </div>
 
