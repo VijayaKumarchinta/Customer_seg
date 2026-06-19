@@ -316,30 +316,6 @@ Your app will be live at `https://your-username-your-repo-name.streamlit.app` wi
 | `screenshots/kmeans_3d.png` | 3D K-Means cluster visualization |
 | `screenshots/recommendations.png` | Business recommendations with campaign planner |
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how to help:
-
-1. **Fork** the repository
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Commit your changes**: `git commit -m 'Add amazing feature'`
-4. **Push to the branch**: `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
-
-### Ideas for Improvements
-
-- [x] Add **Customer Lifetime Value (CLV/LTV)** prediction using linear regression
-- [x] Add **churn probability** scoring with logistic regression
-- [x] Add **month-over-month comparison** with delta indicators on KPIs
-- [x] Add **PDF report generation** (with ReportLab)
-- [ ] Add **database integration** (PostgreSQL/MySQL) for real-time data
-- [ ] Add **user authentication** for multi-user access
-- [ ] Add **automated email reports** for segment changes
-
----
-
 ## 📄 License
 
 Distributed under the **MIT License**. See `LICENSE` for more information.
