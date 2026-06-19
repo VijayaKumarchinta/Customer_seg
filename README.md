@@ -4,6 +4,7 @@
 
 **RFM Analysis · K-Means Clustering · Interactive Visualizations**
 
+[![CI](https://github.com/VijayaKumarchinta/Customer_seg/actions/workflows/ci.yml/badge.svg)](https://github.com/VijayaKumarchinta/Customer_seg/actions/workflows/ci.yml)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamline-red?logo=streamlit&logoColor=white)](https://streamlit.io)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)

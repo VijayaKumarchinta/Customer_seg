@@ -1,0 +1,207 @@
+# =============================================================================
+# Customer Segmentation Dashboard — CI/CD Pipeline
+# =============================================================================
+# Runs on every push to main and on all pull requests.
+#
+# Jobs (run in parallel):
+#   lint      — Python syntax & import validation
+#   pipeline  — End-to-end smoke test (load data, train ML models)
+#   deploy    — Trigger Streamlit Community Cloud redeploy (deploy hook)
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # ── Lint: Python syntax checks & import validation ──────────────────────
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Python syntax check (all .py files)
+        run: |
+          echo "Checking Python syntax..."
+          python -c "
+import ast, sys, os
+errors = 0
+for root, dirs, files in os.walk('.'):
+    dirs[:] = [d for d in dirs if d not in ('.git', '__pycache__', '.venv', 'node_modules')]
+    for f in files:
+        if not f.endswith('.py'):
+            continue
+        path = os.path.join(root, f)
+        try:
+            ast.parse(open(path, encoding='utf-8').read())
+        except SyntaxError as e:
+            print(f'ERROR: {path} — {e}')
+            errors += 1
+if errors:
+    sys.exit(1)
+print(f'  All Python files passed syntax check.')
+"
+
+      - name: Import validation
+        run: |
+          echo "Validating imports..."
+          python -c "
+from utils.data_loader import load_data, get_data_info
+from utils.preprocessing import clean_data, create_customer_summary
+from utils.segmentation import calculate_rfm_scores, label_segments_rfm, get_segment_summary, perform_kmeans_clustering, find_optimal_k
+from utils.predictive import compute_clv, compute_churn_probability, compute_mom_metrics, engineer_features
+from utils.ui_components import hero_header, section_header
+from utils.report_generator import generate_report
+print('  All imports validated successfully.')
+"
+
+      - name: Streamlit config check
+        run: |
+          echo "Verifying Streamlit entry point..."
+          if [ ! -f "app.py" ]; then
+            echo "ERROR: app.py not found!"
+            exit 1
+          fi
+          python -c "
+import ast
+tree = ast.parse(open('app.py', encoding='utf-8').read())
+calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and getattr(n.func, 'attr', None) == 'set_page_config']
+if calls:
+    print('  st.set_page_config() found — entry point OK')
+else:
+    print('  WARNING: st.set_page_config() not found in app.py')
+"
+
+  # ── Pipeline smoke test: load data, RFM, train ML models ──────────────
+  pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      # Cache the downloaded UCI dataset so CI doesn't re-download on every run
+      - name: Cache dataset
+        uses: actions/cache@v4
+        with:
+          path: data/online_retail_II.parquet
+          key: uci-online-retail-v1
+          # Invalidate cache if requirements change (ucimlrepo version may affect data)
+          restore-keys: |
+            uci-online-retail-
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run full pipeline smoke test
+        run: |
+          python -c "
+import time, sys
+sys.path.insert(0, '.')
+
+from utils.data_loader import load_data
+from utils.preprocessing import clean_data, create_customer_summary
+from utils.segmentation import calculate_rfm_scores, label_segments_rfm, get_segment_summary
+from utils.predictive import compute_clv, compute_churn_probability, compute_mom_metrics
+
+print('1/6 Loading data...')
+raw = load_data()
+print(f'   {len(raw):,} transactions')
+
+print('2/6 Cleaning data...')
+clean = clean_data(raw)
+print(f'   {len(clean):,} transactions')
+
+print('3/6 Creating customer summary...')
+customers = create_customer_summary(clean)
+print(f'   {len(customers):,} customers')
+
+print('4/6 Computing RFM scores and segments...')
+customers = calculate_rfm_scores(customers)
+customers = label_segments_rfm(customers)
+summary = get_segment_summary(customers)
+print(f'   {summary[\"Segment\"].nunique()} segments')
+
+print('5/6 Training ML models...')
+clv = compute_clv(customers, clean)
+churn = compute_churn_probability(customers, clean)
+clv_r2 = clv.attrs['model_metrics']['r2']
+churn_auc = churn.attrs['churn_model_metrics']['auc']
+print(f'   CLV R²={clv_r2}, Churn AUC={churn_auc}')
+
+print('6/6 Computing MoM metrics...')
+mom = compute_mom_metrics(clean)
+print(f'   {len(mom[\"monthly_data\"])} months')
+
+print()
+print('=' * 50)
+print('ALL PIPELINE STEPS PASSED')
+print(f'   Transactions: {len(raw):,} -> Cleaned: {len(clean):,}')
+print(f'   Customers: {len(customers):,}')
+print(f'   Segments: {summary[\"Segment\"].nunique()}')
+print(f'   CLV R²: {clv_r2}')
+print(f'   Churn AUC: {churn_auc}')
+print('=' * 50)
+"
+        timeout-minutes: 15
+
+  # ── Deploy: trigger Streamlit Cloud redeploy via deploy hook ──────────
+  # Streamlit Cloud auto-deploys from the connected branch on every push,
+  # so this job is optional. Set the STREAMLIT_DEPLOY_HOOK secret for manual
+  # redeploy triggers (e.g., from a workflow_dispatch or after CI passes).
+  deploy:
+    if: github.ref == 'refs/heads/main' && success()
+    runs-on: ubuntu-latest
+    needs: [lint, pipeline]
+
+    steps:
+      - name: Trigger Streamlit Cloud redeploy
+        if: ${{ secrets.STREAMLIT_DEPLOY_HOOK != '' }}
+        run: |
+          echo "Triggering Streamlit Cloud redeploy..."
+          curl -s -X POST "${{ secrets.STREAMLIT_DEPLOY_HOOK }}" \
+            -H "Accept: application/json" \
+            --connect-timeout 10 --max-time 60
+          echo ""
+          echo "Redeploy triggered successfully."
+
+      - name: No deploy hook configured
+        if: ${{ secrets.STREAMLIT_DEPLOY_HOOK == '' }}
+        run: |
+          echo "No STREAMLIT_DEPLOY_HOOK secret configured."
+          echo "Streamlit Cloud auto-deploys from the connected branch on every push."
+          echo ""
+          echo "To add a deploy hook for manual triggering:"
+          echo "  1. Go to share.streamlit.io -> your app -> Settings -> Deploy Hooks"
+          echo "  2. Create a deploy hook URL"
+          echo "  3. Add it as a GitHub secret named STREAMLIT_DEPLOY_HOOK"

@@ -13,67 +13,118 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ─── Global Custom CSS ───────────────────────────────────────────
+# ─── Global Custom CSS — Premium Modern Aesthetic ────────────
 st.markdown("""
 <style>
-    /* ─── Design Tokens ─── */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    /* ═══════════════════════════════════════════════════════════
+       DESIGN TOKENS
+       ═══════════════════════════════════════════════════════════ */
     :root {
         --primary: #FF4B4B;
-        --primary-dark: #E03E3E;
-        --primary-light: #FFF0F0;
-        --dark: #0F172A;
-        --medium: #475569;
-        --light: #F8FAFC;
-        --border: #E2E8F0;
-        --accent-gold: #F59E0B;
-        --accent-green: #10B981;
-        --accent-blue: #3B82F6;
-        --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
-        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
-        --radius: 12px;
+        --primary-dark: #D93636;
+        --primary-glow: rgba(255,75,75,0.25);
+        --primary-subtle: rgba(255,75,75,0.08);
+
+        --bg-page: #F0F2F5;
+        --bg-card: #FFFFFF;
+        --bg-card-hover: #FAFBFC;
+
+        --text-primary: #0F1419;
+        --text-secondary: #536471;
+        --text-tertiary: #8B98A5;
+
+        --border-light: rgba(0,0,0,0.06);
+        --border-medium: rgba(0,0,0,0.1);
+
+        --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+        --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+        --shadow-lg: 0 16px 48px rgba(0,0,0,0.12);
+        --shadow-glow: 0 8px 32px rgba(255,75,75,0.2);
+
         --radius-sm: 8px;
-        --transition: all 0.2s ease;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+
+        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+        --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
-    /* ─── Page Transition Animation ───
-       The .block-container wrapper persists between Streamlit widget
-       interactions — it only gets recreated on actual page navigation.
-       So a subtle fade+slide plays just once per page visit, then
-       stays visible during normal widget use.
-       Other elements (hero banners, section titles) are recreated
-       on every rerender, so we deliberately avoid animating them
-       to prevent flicker when using filters and sliders.
-       ─── */
+    /* ─── Page Transition ─── */
     @keyframes fadeSlideUp {
-        from { opacity: 0; transform: translateY(8px); }
+        from { opacity: 0; transform: translateY(12px); }
         to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
     }
 
     .main > .block-container {
-        animation: fadeSlideUp 0.35s ease-out both;
+        animation: fadeIn 0.4s ease-out both;
         padding-top: 1.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
     }
 
-    /* Reduce motion preference — respect user accessibility settings */
     @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
+        *, *::before, *::after {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
         }
     }
 
-    /* ─── Typography ─── */
+    /* ─── Base ─── */
     html { font-size: 16px; }
-    h1, h2, h3, h4 { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { font-family: var(--font); background: var(--bg-page); }
 
-    /* ─── Focus / Keyboard Accessibility ───
-       Scoped to interactive elements only — divs, spans, headings and other
-       non-interactive elements should not receive a focus ring.
-       ─── */
+    .main {
+        background: var(--bg-page);
+    }
+
+    /* ─── Typography ─── */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font);
+        letter-spacing: -0.02em;
+    }
+    .main h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.03em;
+    }
+    .main h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .main h3 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+    }
+    a:hover {
+        color: var(--primary-dark);
+    }
+
+    /* ─── Focus ─── */
     button:focus-visible,
     a:focus-visible,
     select:focus-visible,
@@ -82,62 +133,110 @@ st.markdown("""
     [tabindex]:focus-visible {
         outline: 2px solid var(--primary);
         outline-offset: 2px;
-    }
-    .stButton button:focus-visible {
-        outline: 2px solid var(--primary);
-        outline-offset: 2px;
-        box-shadow: 0 0 0 3px rgba(255,75,75,0.3);
+        border-radius: 6px;
     }
 
-    /* ─── Sidebar ─── */
+    /* ═══════════════════════════════════════════════════════════
+       SIDEBAR — Premium Dark
+       ═══════════════════════════════════════════════════════════ */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
-        border-right: none;
+        background: linear-gradient(175deg, #0A0F1D 0%, #141B2D 100%);
+        border-right: 1px solid rgba(255,255,255,0.04);
     }
-    section[data-testid="stSidebar"] > div:first-child { padding: 1rem 0.75rem; }
-    section[data-testid="stSidebar"] p { color: #CBD5E1; }
-    section[data-testid="stSidebar"] h3 { color: #F1F5F9; font-weight: 600; }
+    section[data-testid="stSidebar"] > div:first-child {
+        padding: 1.25rem 1rem;
+    }
+    section[data-testid="stSidebar"] p {
+        color: #94A3B8;
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+    section[data-testid="stSidebar"] h3 {
+        color: #E2E8F0;
+        font-weight: 600;
+        font-size: 0.8rem !important;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
     section[data-testid="stSidebar"] hr {
-        border-color: rgba(255,255,255,0.08);
-        margin: 1rem 0;
+        border-color: rgba(255,255,255,0.06);
+        margin: 1.25rem 0;
     }
 
-    /* Sidebar select boxes */
+    /* Sidebar navigation links — sized naturally via font inheritance */
+
+    /* Sidebar selects */
     section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
-        border-color: rgba(255,255,255,0.12) !important;
-        background: rgba(255,255,255,0.05) !important;
+        border-color: rgba(255,255,255,0.08) !important;
+        background: rgba(255,255,255,0.04) !important;
         color: #E2E8F0;
         border-radius: var(--radius-sm);
+        transition: border-color var(--transition-fast);
+    }
+    section[data-testid="stSidebar"] div[data-baseweb="select"] > div:hover {
+        border-color: rgba(255,255,255,0.18) !important;
     }
     section[data-testid="stSidebar"] div[data-baseweb="select"] > div:focus-within {
         border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px var(--primary-glow) !important;
     }
 
-    /* Sidebar metric table */
+    /* Sidebar slider */
+    section[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] {
+        margin-top: 0.5rem;
+    }
+    section[data-testid="stSidebar"] .stSlider [role="slider"] {
+        background: var(--primary) !important;
+        box-shadow: 0 0 0 4px var(--primary-glow) !important;
+    }
+
+    /* Sidebar table */
     section[data-testid="stSidebar"] table {
-        background: rgba(255,255,255,0.05);
+        background: rgba(255,255,255,0.03);
         border-radius: var(--radius-sm);
-        color: #E2E8F0;
-        font-size: 0.8rem;
+        color: #CBD5E1;
+        font-size: 0.78rem;
+        width: 100%;
+        border-collapse: collapse;
     }
     section[data-testid="stSidebar"] td {
-        padding: 4px 8px;
-        border-color: rgba(255,255,255,0.06);
+        padding: 5px 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    section[data-testid="stSidebar"] tr:last-child td {
+        border-bottom: none;
+    }
+    section[data-testid="stSidebar"] td:first-child {
+        font-weight: 500;
+        color: #94A3B8;
+    }
+    section[data-testid="stSidebar"] td:last-child {
+        text-align: right;
+        font-weight: 600;
+        color: #E2E8F0;
     }
 
+    /* Sidebar divider customization */
+    section[data-testid="stSidebar"] .stMarkdown hr {
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    }
 
-
-    /* ─── KPI Cards ─── */
+    /* ═══════════════════════════════════════════════════════════
+       KPI METRIC CARDS — Glass Premium
+       ═══════════════════════════════════════════════════════════ */
     div[data-testid="metric-container"] {
-        background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1rem 0.75rem;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition);
+        background: var(--bg-card);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: 1.25rem 1rem;
+        box-shadow: var(--shadow-xs);
+        transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
         position: relative;
         overflow: hidden;
     }
+    /* Accent bar */
     div[data-testid="metric-container"]::before {
         content: '';
         position: absolute;
@@ -145,323 +244,372 @@ st.markdown("""
         left: 0;
         right: 0;
         height: 3px;
-        background: var(--primary);
-        border-radius: var(--radius) var(--radius) 0 0;
+        background: linear-gradient(90deg, var(--primary), #FF6B6B);
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+    /* Subtle shine overlay on hover */
+    div[data-testid="metric-container"]::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.6) 50%, transparent 60%);
+        background-size: 200% 100%;
+        background-position: 100% 0;
+        transition: background-position 0.6s;
+        pointer-events: none;
     }
     div[data-testid="metric-container"]:hover {
+        transform: translateY(-3px);
         box-shadow: var(--shadow-md);
-        transform: translateY(-2px);
-        border-color: var(--primary);
+        border-color: var(--border-medium);
+    }
+    div[data-testid="metric-container"]:hover::after {
+        background-position: -100% 0;
     }
     div[data-testid="metric-container"] label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--medium);
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        color: var(--text-secondary) !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
     div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--dark);
+        font-size: 1.75rem !important;
+        font-weight: 700 !important;
+        color: var(--text-primary) !important;
         line-height: 1.2;
+        margin-top: 0.15rem;
     }
     div[data-testid="metric-container"] div[data-testid="stMetricDelta"] {
-        font-size: 0.8rem;
+        font-size: 0.8rem !important;
+    }
+    div[data-testid="metric-container"] div[data-testid="stMetricDelta"] {
+        font-weight: 600;
     }
 
-    /* ─── Buttons ─── */
+    /* ═══════════════════════════════════════════════════════════
+       BUTTONS — Refined
+       ═══════════════════════════════════════════════════════════ */
     .stButton button {
         border-radius: var(--radius-sm);
-        transition: var(--transition);
+        transition: all var(--transition-fast);
         font-weight: 600;
-        border: none;
+        font-size: 0.85rem;
+        border: 1px solid var(--border-medium);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        padding: 0.4rem 1rem;
+        box-shadow: var(--shadow-xs);
     }
     .stButton button:hover {
         transform: translateY(-1px);
-        box-shadow: var(--shadow-md);
+        box-shadow: var(--shadow-sm);
+        border-color: var(--primary);
+    }
+    .stButton button:active {
+        transform: translateY(0);
     }
     button[kind="primary"] {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
+        background: linear-gradient(135deg, var(--primary), #FF6B6B) !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 14px var(--primary-glow) !important;
     }
     button[kind="primary"]:hover {
-        box-shadow: 0 4px 12px rgba(255,75,75,0.4);
+        box-shadow: 0 6px 20px var(--primary-glow) !important;
+        transform: translateY(-2px) !important;
+    }
+    button[kind="primary"]:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 2px 8px var(--primary-glow) !important;
     }
 
-    /* ─── DataFrames ─── */
+    /* ═══════════════════════════════════════════════════════════
+       DATAFRAMES — Clean Tables
+       ═══════════════════════════════════════════════════════════ */
     .stDataFrame {
-        border-radius: var(--radius-sm);
-        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
         overflow: hidden;
+        box-shadow: var(--shadow-xs);
+        transition: box-shadow var(--transition-fast);
+    }
+    .stDataFrame:hover {
+        box-shadow: var(--shadow-sm);
     }
     .stDataFrame table {
-        font-size: 0.85rem;
+        font-size: 0.83rem;
+        width: 100%;
+        border-collapse: collapse;
     }
     .stDataFrame thead tr th {
-        background: linear-gradient(135deg, var(--dark), #1E293B);
+        background: #0F1419;
         color: white;
         font-weight: 600;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 0.03em;
-        padding: 0.6rem 0.75rem;
+        letter-spacing: 0.04em;
+        padding: 0.7rem 0.85rem;
+        border: none;
+    }
+    .stDataFrame tbody tr {
+        transition: background var(--transition-fast);
     }
     .stDataFrame tbody tr:hover {
-        background-color: #F1F5F9;
-        transition: var(--transition);
+        background-color: var(--primary-subtle);
+    }
+    .stDataFrame tbody td {
+        padding: 0.55rem 0.85rem;
+        border-bottom: 1px solid var(--border-light);
+        color: var(--text-secondary);
+    }
+    .stDataFrame tbody tr:last-child td {
+        border-bottom: none;
     }
 
-    /* ─── Tabs ─── */
+    /* ═══════════════════════════════════════════════════════════
+       TABS — Pill Design
+       ═══════════════════════════════════════════════════════════ */
+    .stTabs {
+        margin-bottom: 1rem;
+    }
     .stTabs [data-baseweb="tab-list"] {
-        gap: 0.5rem;
-        background: var(--light);
-        padding: 0.4rem;
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
+        gap: 0.35rem;
+        background: rgba(0,0,0,0.03);
+        padding: 0.35rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: var(--radius-sm);
-        padding: 0.5rem 1rem;
+        padding: 0.45rem 1rem;
         font-weight: 500;
-        transition: var(--transition);
-        color: var(--medium);
+        font-size: 0.85rem;
+        transition: all var(--transition-fast);
+        color: var(--text-secondary);
+        border: 1px solid transparent;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        background: rgba(255,75,75,0.08);
+        background: rgba(255,75,75,0.06);
         color: var(--primary);
+        border-color: rgba(255,75,75,0.1);
     }
     .stTabs [aria-selected="true"] {
-        background: white;
-        box-shadow: var(--shadow-sm);
-        color: var(--primary);
-        font-weight: 600;
+        background: var(--bg-card) !important;
+        box-shadow: var(--shadow-sm) !important;
+        color: var(--primary) !important;
+        font-weight: 600 !important;
+        border-color: var(--border-light) !important;
     }
 
-    /* ─── Dividers ─── */
-    hr {
+    /* ═══════════════════════════════════════════════════════════
+       DIVIDERS — Gradient fade
+       ═══════════════════════════════════════════════════════════ */
+    hr:not(.stSidebar hr) {
         border: none;
         height: 1px;
-        background: linear-gradient(90deg, transparent, var(--border), transparent);
+        background: linear-gradient(90deg, transparent, var(--border-medium), transparent);
         margin: 1.5rem 0;
     }
 
-    /* ─── Info/Success/Warning boxes ─── */
+    /* ═══════════════════════════════════════════════════════════
+       ALERTS / INFO BOXES
+       ═══════════════════════════════════════════════════════════ */
     .stAlert {
         border-radius: var(--radius-sm);
-        border: none !important;
-        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-light) !important;
+        box-shadow: var(--shadow-xs);
+        font-size: 0.9rem;
     }
     .stAlert [data-testid="stAlertContainer"] {
         border-radius: var(--radius-sm);
     }
-
-    /* ─── Headers ─── */
-    .main h1 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: var(--dark);
-        letter-spacing: -0.02em;
-    }
-    .main h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--dark);
-    }
-    .main h3 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--medium);
+    /* Custom info box styling */
+    div[data-baseweb="notification"] {
+        border-radius: var(--radius-sm) !important;
+        border: 1px solid var(--border-light) !important;
     }
 
-    /* ─── Expanders ─── */
+    /* ═══════════════════════════════════════════════════════════
+       EXPANDERS
+       ═══════════════════════════════════════════════════════════ */
     .streamlit-expanderHeader {
         font-weight: 600;
-        color: var(--medium);
+        color: var(--text-secondary);
         border-radius: var(--radius-sm);
-        transition: var(--transition);
+        transition: all var(--transition-fast);
+        padding: 0.5rem 0;
+        font-size: 0.9rem;
     }
     .streamlit-expanderHeader:hover {
         color: var(--primary);
     }
-
-    /* ─── Captions ─── */
-    .stCaption {
-        color: #94A3B8;
-        font-size: 0.8rem;
+    .streamlit-expanderHeader svg {
+        transition: transform var(--transition-fast);
+    }
+    [data-testid="stExpander"] {
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-md);
+        padding: 0 0.5rem;
+        background: var(--bg-card);
+        box-shadow: var(--shadow-xs);
+        transition: box-shadow var(--transition-fast);
+    }
+    [data-testid="stExpander"]:hover {
+        box-shadow: var(--shadow-sm);
     }
 
-    /* ─── Multi-select ─── */
+    /* ═══════════════════════════════════════════════════════════
+       CAPTIONS
+       ═══════════════════════════════════════════════════════════ */
+    .stCaption {
+        color: var(--text-tertiary);
+        font-size: 0.78rem;
+        font-weight: 400;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       MULTI-SELECT
+       ═══════════════════════════════════════════════════════════ */
     .stMultiSelect [data-baseweb="select"] > div {
         border-radius: var(--radius-sm);
-        border-color: var(--border);
+        border-color: var(--border-medium);
+        transition: all var(--transition-fast);
+        background: var(--bg-card);
+    }
+    .stMultiSelect [data-baseweb="select"] > div:hover {
+        border-color: var(--primary);
     }
     .stMultiSelect [data-baseweb="select"] > div:focus-within {
         border-color: var(--primary);
-        box-shadow: 0 0 0 2px rgba(255,75,75,0.1);
+        box-shadow: 0 0 0 3px var(--primary-glow);
     }
 
-    /* ─── Download buttons ─── */
+    /* ═══════════════════════════════════════════════════════════
+       DOWNLOAD BUTTONS
+       ═══════════════════════════════════════════════════════════ */
     .stDownloadButton button {
         border-radius: var(--radius-sm);
-        transition: var(--transition);
+        transition: all var(--transition-fast);
         font-weight: 600;
+        font-size: 0.82rem;
+        border: 1px solid var(--border-medium) !important;
+        box-shadow: var(--shadow-xs);
     }
     .stDownloadButton button:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
         box-shadow: var(--shadow-md);
+        border-color: var(--primary) !important;
+    }
+    .stDownloadButton button:active {
+        transform: translateY(0);
     }
 
-    /* ─── Progress / Spinner ─── */
+    /* ═══════════════════════════════════════════════════════════
+       SELECTBOX (main area, not sidebar)
+       ═══════════════════════════════════════════════════════════ */
+    .row-widget.stSelectbox [data-baseweb="select"] > div {
+        border-radius: var(--radius-sm);
+        border-color: var(--border-medium);
+        transition: all var(--transition-fast);
+        background: var(--bg-card);
+        box-shadow: var(--shadow-xs);
+    }
+    .row-widget.stSelectbox [data-baseweb="select"] > div:hover {
+        border-color: var(--primary);
+    }
+    .row-widget.stSelectbox [data-baseweb="select"] > div:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SLIDER (main area)
+       ═══════════════════════════════════════════════════════════ */
+    .stSlider [role="slider"] {
+        background: var(--primary) !important;
+        box-shadow: 0 0 0 4px var(--primary-glow) !important;
+        transition: box-shadow var(--transition-fast);
+    }
+    .stSlider [role="slider"]:hover {
+        box-shadow: 0 0 0 6px var(--primary-glow) !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       PROGRESS / SPINNER
+       ═══════════════════════════════════════════════════════════ */
     .stSpinner {
         text-align: center;
-        padding: 2rem;
+        padding: 2.5rem;
     }
     .stSpinner > div {
-        border-top-color: var(--primary);
+        border-top-color: var(--primary) !important;
+        border-width: 3px;
+        width: 32px;
+        height: 32px;
+    }
+    .stSpinner p {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-top: 0.75rem;
     }
 
     /* ═══════════════════════════════════════════════════════════
        RESPONSIVE BREAKPOINTS
        ═══════════════════════════════════════════════════════════ */
-
-    /* ─── Tablet: 768px–1024px ─── */
     @media screen and (max-width: 1024px) {
-        /* Reduce hero banner padding */
         .hero-banner { padding: 1.25rem !important; }
         .hero-title { font-size: 1.5rem !important; }
         .hero-subtitle { font-size: 0.85rem !important; }
-
-        /* Smaller headings */
         .main h1 { font-size: 1.8rem; }
         .main h2 { font-size: 1.3rem; }
         .main h3 { font-size: 1.05rem; }
         .section-title { font-size: 1.05rem !important; }
-
-        /* KPI cards shrink */
         div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
-            font-size: 1.4rem;
+            font-size: 1.4rem !important;
         }
-        div[data-testid="metric-container"] label {
-            font-size: 0.7rem;
-        }
-
-        /* Smaller table text */
         .stDataFrame table { font-size: 0.75rem; }
-        .stDataFrame thead tr th { font-size: 0.7rem; padding: 0.4rem 0.5rem; }
-
-        /* Reduce spacing */
-        hr { margin: 1rem 0; }
+        .stDataFrame thead tr th { font-size: 0.7rem; padding: 0.5rem 0.65rem; }
+        hr:not(.stSidebar hr) { margin: 1rem 0; }
         .main > .block-container { padding-top: 1rem; }
     }
 
-    /* ─── Mobile: <768px ─── */
     @media screen and (max-width: 768px) {
-        /* Base font */
         html { font-size: 14px; }
-
-        /* Hero banner compact */
         .hero-banner { padding: 1rem !important; margin-bottom: 1rem !important; }
         .hero-title { font-size: 1.3rem !important; }
         .hero-subtitle { font-size: 0.8rem !important; }
-
-        /* Headings */
-        .main h1 { font-size: 1.5rem; letter-spacing: -0.01em; }
+        .main h1 { font-size: 1.5rem; }
         .main h2 { font-size: 1.15rem; }
         .main h3 { font-size: 0.95rem; }
         .section-title { font-size: 0.95rem !important; }
-
-        /* KPI cards */
         div[data-testid="metric-container"] {
-            padding: 0.75rem 0.5rem;
+            padding: 0.85rem 0.65rem;
         }
         div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
-            font-size: 1.2rem;
+            font-size: 1.2rem !important;
         }
-        div[data-testid="metric-container"] label {
-            font-size: 0.65rem;
-        }
-
-        /* Tables — scrollable horizontally */
-        .stDataFrame {
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch;
-        }
+        .stDataFrame { overflow-x: auto !important; }
         .stDataFrame table { font-size: 0.7rem; }
-        .stDataFrame thead tr th {
-            font-size: 0.65rem;
-            padding: 0.35rem 0.4rem;
-            white-space: nowrap;
-        }
-        .stDataFrame tbody td {
-            padding: 0.3rem 0.4rem;
-            white-space: nowrap;
-        }
-
-        /* Tabs — scrollable */
-        .stTabs [data-baseweb="tab-list"] {
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch;
-            flex-wrap: nowrap !important;
-            gap: 0.3rem;
-            padding: 0.3rem;
-        }
-        .stTabs [data-baseweb="tab"] {
-            padding: 0.35rem 0.6rem !important;
-            font-size: 0.8rem;
-            white-space: nowrap;
-        }
-
-        /* Sidebar */
-        section[data-testid="stSidebar"] > div:first-child {
-            padding: 0.5rem 0.5rem;
-        }
-        section[data-testid="stSidebar"] table {
-            font-size: 0.7rem;
-        }
-
-        /* Reduce spacing */
-        hr { margin: 0.75rem 0; }
+        .stDataFrame thead tr th { font-size: 0.65rem; padding: 0.4rem 0.5rem; white-space: nowrap; }
+        .stTabs [data-baseweb="tab-list"] { overflow-x: auto !important; flex-wrap: nowrap !important; gap: 0.25rem; padding: 0.25rem; }
+        .stTabs [data-baseweb="tab"] { padding: 0.35rem 0.6rem !important; font-size: 0.78rem; white-space: nowrap; }
+        section[data-testid="stSidebar"] > div:first-child { padding: 0.75rem 0.6rem; }
+        hr:not(.stSidebar hr) { margin: 0.75rem 0; }
         .main > .block-container { padding-top: 0.75rem; }
-
-        /* Home page hero banner */
-        .home-hero-title {
-            font-size: 1.8rem !important;
-        }
     }
 
-    /* ─── Small Mobile: <480px ─── */
     @media screen and (max-width: 480px) {
         html { font-size: 13px; }
-
         .hero-banner { padding: 0.75rem !important; }
         .hero-title { font-size: 1.1rem !important; }
         .hero-subtitle { font-size: 0.75rem !important; }
-
-        .home-hero-title {
-            font-size: 1.3rem !important;
-        }
-
         .main h1 { font-size: 1.3rem; }
         .main h2 { font-size: 1rem; }
-        .main h3, .section-title { font-size: 0.85rem !important; }
-
-        div[data-testid="metric-container"] {
-            padding: 0.5rem 0.4rem;
-            overflow-wrap: break-word;
-            word-break: break-word;
-        }
-        div[data-testid="metric-container"] div[data-testid="stMetricValue"] {
-            font-size: 1rem;
-        }
-        div[data-testid="metric-container"] label {
-            font-size: 0.6rem;
-        }
-
+        div[data-testid="metric-container"] { padding: 0.6rem 0.5rem; }
+        div[data-testid="metric-container"] div[data-testid="stMetricValue"] { font-size: 1rem !important; }
         .stDataFrame table { font-size: 0.65rem; }
-        .stDataFrame thead tr th { font-size: 0.6rem; padding: 0.25rem 0.3rem; }
-
-        hr { margin: 0.5rem 0; }
+        hr:not(.stSidebar hr) { margin: 0.5rem 0; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -557,12 +705,25 @@ st.session_state["customer_df"] = customer_df
 # ---- Sidebar ----
 st.sidebar.markdown(
     """
-    <div role="img" aria-label="Customer Segmentation Dashboard logo" style="text-align: center; padding: 1.5rem 0.5rem;">
-        <div aria-hidden="true" style="font-size: 2.5rem; margin-bottom: 0.3rem;">📊</div>
-        <h3 style="margin: 0.2rem 0; color: #FF4B4B; font-weight: 700; font-size: 1.2rem;">Customer<br>Segmentation</h3>
-        <p style="font-size: 0.75rem; color: #64748B; margin-top: 0.2rem;">RFM Analysis · K-Means</p>
-        <div style="margin-top: 0.75rem; padding: 0.3rem 0.75rem; background: rgba(255,75,75,0.12); border-radius: 20px; display: inline-block;">
-            <span style="font-size: 0.7rem; color: #FF4B4B; font-weight: 600;">LIVE DASHBOARD</span>
+    <div role="img" aria-label="Customer Segmentation Dashboard logo"
+         style="text-align: center; padding: 1.75rem 0.5rem 1rem;">
+        <div style="width: 52px; height: 52px; margin: 0 auto 0.75rem;
+                    background: linear-gradient(135deg, #FF4B4B 0%, #FF6B6B 100%);
+                    border-radius: 14px; display: flex; align-items: center; justify-content: center;
+                    box-shadow: 0 8px 24px rgba(255,75,75,0.3);">
+            <span style="font-size: 1.6rem; line-height: 1;">📊</span>
+        </div>
+        <h3 style="margin: 0; color: #F1F5F9; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.01em;">
+            Customer Segmentation
+        </h3>
+        <p style="font-size: 0.7rem; color: #64748B; margin-top: 0.2rem; letter-spacing: 0.02em;">
+            RFM Analysis · K-Means
+        </p>
+        <div style="margin-top: 0.75rem; padding: 0.2rem 0.75rem;
+                    background: linear-gradient(135deg, rgba(255,75,75,0.15), rgba(255,75,75,0.08));
+                    border: 1px solid rgba(255,75,75,0.15);
+                    border-radius: 100px; display: inline-block;">
+            <span style="font-size: 0.65rem; color: #FF6B6B; font-weight: 600; letter-spacing: 0.04em;">LIVE DASHBOARD</span>
         </div>
     </div>
     """,
@@ -623,11 +784,12 @@ st.session_state["n_clusters"] = n_clusters
 st.sidebar.divider()
 st.sidebar.markdown(
     """
-    <div role="contentinfo" aria-label="Dashboard footer" style="font-size: 0.7rem; color: #94A3B8; text-align: center; line-height: 1.6;">
-        Built with Streamlit<br>
-        UCI Online Retail II Dataset<br>
-        RFM + K-Means Segmentation<br>
-        © 2025
+    <div role="contentinfo" aria-label="Dashboard footer"
+         style="font-size: 0.65rem; color: #64748B; text-align: center; line-height: 1.7; padding: 0.5rem 0;">
+        <span style="opacity: 0.5;">Built with Streamlit</span><br>
+        <span style="opacity: 0.7;">UCI Online Retail II Dataset</span><br>
+        <span style="opacity: 0.5;">RFM + K-Means Segmentation</span><br>
+        <span style="opacity: 0.4;">© 2025</span>
     </div>
     """,
     unsafe_allow_html=True,
@@ -636,18 +798,41 @@ st.sidebar.markdown(
 # ---- Home page content ----
 st.markdown(
     """
-    <div class="card" role="region" aria-label="Dashboard introduction"
-         style="text-align: center; padding: 2.5rem 2rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border: none;">
-        <h1 class="home-hero-title" style="font-size: 2.8rem; margin-bottom: 0.3rem; color: #FFFFFF; font-weight: 700;">📊 Customer Segmentation Dashboard</h1>
-        <p style="font-size: 1.1rem; color: #94A3B8; max-width: 650px; margin: 0.5rem auto 0;">
+    <div role="region" aria-label="Dashboard introduction"
+         style="text-align: center; padding: 3rem 2.5rem; margin-bottom: 2rem;
+                background: linear-gradient(145deg, #0A0F1D 0%, #1A2332 50%, #0F172A 100%);
+                border: 1px solid rgba(255,255,255,0.06);
+                border-radius: 20px;
+                position: relative; overflow: hidden;">
+        <!-- Subtle noise/gradient overlay -->
+        <div style="position: absolute; inset: 0;
+                    background: radial-gradient(ellipse at 20% 50%, rgba(255,75,75,0.06) 0%, transparent 60%);
+                    pointer-events: none;"></div>
+        <div style="position: absolute; inset: 0;
+                    background: radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.04) 0%, transparent 50%);
+                    pointer-events: none;"></div>
+        <h1 class="home-hero-title"
+            style="font-size: 2.8rem; margin-bottom: 0.5rem; color: #FFFFFF; font-weight: 800;
+                   letter-spacing: -0.03em; position: relative;">
+            📊 Customer Segmentation Dashboard
+        </h1>
+        <p style="font-size: 1.1rem; color: #94A3B8; max-width: 600px; margin: 0.5rem auto 0; line-height: 1.7; position: relative;">
             Analyze <strong style="color: #FF4B4B;">500K+ real transactions</strong> from a UK-based online retailer.
             Segment customers by behavior using <strong style="color: #F59E0B;">RFM analysis</strong> and <strong style="color: #3B82F6;">K-Means clustering</strong>.
         </p>
-        <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
-            <span style="background: rgba(255,75,75,0.15); color: #FF4B4B; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;" aria-label="11 segments">🏆 11 Segments</span>
-            <span style="background: rgba(16,185,129,0.15); color: #10B981; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;" aria-label="CLV prediction">📈 CLV Prediction</span>
-            <span style="background: rgba(59,130,246,0.15); color: #3B82F6; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;" aria-label="Churn analysis">🔮 Churn Analysis</span>
-            <span style="background: rgba(245,158,11,0.15); color: #F59E0B; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;" aria-label="PDF reports">📄 PDF Reports</span>
+        <div style="margin-top: 1.25rem; display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; position: relative;">
+            <span style="background: rgba(255,75,75,0.12); color: #FF6B6B; padding: 0.25rem 0.9rem;
+                         border-radius: 100px; font-size: 0.78rem; font-weight: 600;
+                         border: 1px solid rgba(255,75,75,0.15);" aria-label="11 segments">🏆 11 Segments</span>
+            <span style="background: rgba(16,185,129,0.12); color: #34D399; padding: 0.25rem 0.9rem;
+                         border-radius: 100px; font-size: 0.78rem; font-weight: 600;
+                         border: 1px solid rgba(16,185,129,0.15);" aria-label="CLV prediction">📈 CLV Prediction</span>
+            <span style="background: rgba(59,130,246,0.12); color: #60A5FA; padding: 0.25rem 0.9rem;
+                         border-radius: 100px; font-size: 0.78rem; font-weight: 600;
+                         border: 1px solid rgba(59,130,246,0.15);" aria-label="Churn analysis">🔮 Churn Analysis</span>
+            <span style="background: rgba(245,158,11,0.12); color: #FBBF24; padding: 0.25rem 0.9rem;
+                         border-radius: 100px; font-size: 0.78rem; font-weight: 600;
+                         border: 1px solid rgba(245,158,11,0.15);" aria-label="PDF reports">📄 PDF Reports</span>
         </div>
     </div>
     """,
@@ -707,14 +892,15 @@ with col2:
     st.markdown(
         """
         <div role="complementary" aria-label="Quick navigation guide"
-         style="background: linear-gradient(135deg, #FFF0F0, #FFE4E4); border: 1px solid #FFD0D0; border-radius: 12px; padding: 1.25rem; height: 100%;">
-            <h4 style="margin: 0 0 0.75rem 0; color: #991B1B; font-size: 0.9rem;">💡 Quick Navigation</h4>
-            <p style="font-size: 0.85rem; color: #7F1D1D; line-height: 1.7; margin: 0;">
+         style="background: linear-gradient(135deg, var(--primary-subtle, rgba(255,75,75,0.05)), rgba(255,75,75,0.02));
+                border: 1px solid rgba(255,75,75,0.1); border-radius: 14px; padding: 1.5rem; height: 100%;">
+            <h4 style="margin: 0 0 0.75rem 0; color: #DC2626; font-size: 0.9rem; font-weight: 700;">💡 Quick Navigation</h4>
+            <p style="font-size: 0.85rem; color: #7F1D1D; line-height: 2; margin: 0;">
                 👈 Use the <strong>sidebar</strong> to explore:<br><br>
-                <b>📊 1. Segment Overview</b> — Distribution &amp; KPIs<br>
-                <b>🔬 2. RFM Analysis</b> — Interactive scatter plots<br>
-                <b>🎯 3. Recommendations</b> — Actionable insights<br>
-                <b>🔮 4. Predictive Analytics</b> — CLV, churn &amp; trends
+                <span style="font-weight: 600;">📊 1. Segment Overview</span> — Distribution &amp; KPIs<br>
+                <span style="font-weight: 600;">🔬 2. RFM Analysis</span> — Interactive scatter plots<br>
+                <span style="font-weight: 600;">🎯 3. Recommendations</span> — Actionable insights<br>
+                <span style="font-weight: 600;">🔮 4. Predictive Analytics</span> — CLV, churn &amp; trends
             </p>
         </div>
         """,
@@ -747,12 +933,12 @@ with col1:
 with col2:
     st.markdown(
         """
-        <div role="region" aria-label="Download report description" style="padding: 0.5rem 0;">
-            <p style="color: #475569; font-size: 0.95rem; margin: 0;">
+        <div role="region" aria-label="Download report description" style="padding: 0.75rem 0;">
+            <p style="color: var(--text-secondary, #536471); font-size: 0.95rem; margin: 0; line-height: 1.6;">
                 <strong>📥 Download a comprehensive PDF report</strong> including: executive summary,
                 segment breakdown, churn risk analysis, business recommendations, and monthly trends.
             </p>
-            <p style="color: #94A3B8; font-size: 0.8rem; margin-top: 0.5rem;">
+            <p style="color: var(--text-tertiary, #8B98A5); font-size: 0.8rem; margin-top: 0.5rem;">
                 ⚡ Generated on-the-fly with your latest data — includes all current filters and segments.
             </p>
         </div>
@@ -762,8 +948,8 @@ with col2:
 
 st.markdown(
     """
-    <div style="text-align: center; padding: 2rem 0 0.5rem;">
-        <p style="color: #94A3B8; font-size: 0.85rem;">
+    <div style="text-align: center; padding: 2.5rem 0 0.5rem;">
+        <p style="color: #8B98A5; font-size: 0.85rem;">
             ⬅️ Use the sidebar pages to dive deeper into each analysis view
         </p>
     </div>

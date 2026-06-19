@@ -70,7 +70,8 @@ def section_header(title: str) -> str:
     """
     return (
         '<h3 class="section-title" '
-        'style="font-size: 1.15rem; font-weight: 600; '
-        'color: #0F172A; padding-bottom: 0.5rem; border-bottom: 2px solid #FFF0F0; '
-        f'margin-bottom: 0.75rem;">{title}</h3>'
+        'style="font-size: 1.15rem; font-weight: 700; '
+        'color: #0F1419; padding-bottom: 0.6rem; '
+        'border-bottom: 2px solid rgba(255,75,75,0.15); '
+        f'margin-bottom: 1rem; letter-spacing: -0.01em;">{title}</h3>'
     )
