@@ -744,7 +744,8 @@ st.sidebar.markdown(
 <tr><td>🌍 Countries</td><td>{data_info['countries']}</td></tr>
 <tr><td>📅 Period</td><td>{data_info['date_range'][0]} to {data_info['date_range'][1]}</td></tr>
 </table>
-</div>"""
+</div>""",
+    unsafe_allow_html=True,
 )
 
 st.sidebar.divider()
