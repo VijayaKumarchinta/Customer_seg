@@ -8,8 +8,9 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-st.title("📊 Segment Overview")
-st.markdown("### Customer segmentation distribution and key performance indicators")
+from utils.ui_components import hero_header, section_header
+
+st.markdown(hero_header("📊 Segment Overview", "Customer segmentation distribution and key performance indicators"), unsafe_allow_html=True)
 
 # ---- Ensure data is loaded ----
 if "customer_df" not in st.session_state:
@@ -26,12 +27,11 @@ selected_country = st.session_state.get("selected_country", "All Countries")
 if selected_country != "All Countries":
     country_customers = clean_df[clean_df["Country"] == selected_country]["CustomerID"].unique()
     customer_df = customer_df[customer_df["CustomerID"].isin(country_customers)]
-    # Recompute segment_summary from filtered data so percentages are accurate
     from utils.segmentation import get_segment_summary
     segment_summary = get_segment_summary(customer_df)
 
 # ---- KPI Cards ----
-st.subheader("🎯 Key Metrics")
+st.markdown(section_header("🎯 Key Metrics"), unsafe_allow_html=True)
 
 total_customers = len(customer_df)
 avg_recency = customer_df["Recency"].mean()
@@ -47,55 +47,29 @@ mom_cust_delta = f"{mom['customers_delta']:+.1f}% MoM" if mom.get('customers_del
 mom_orders_delta = f"{mom['orders_delta']:+.1f}% MoM" if mom.get('orders_delta') is not None else None
 
 with kpi1:
-    st.metric(
-        "Total Customers",
-        value=f"{total_customers:,}",
-        delta=mom_cust_delta,
-    )
-
+    st.metric("Total Customers", value=f"{total_customers:,}", delta=mom_cust_delta)
 with kpi2:
-    st.metric(
-        "Avg Recency",
-        value=f"{avg_recency:.0f} days",
-        delta=f"{'↓' if avg_recency < customer_df['Recency'].median() else '↑'} Since last purchase",
-        delta_color="inverse",
-    )
-
+    st.metric("Avg Recency", value=f"{avg_recency:.0f} days",
+              delta=f"{'↓' if avg_recency < customer_df['Recency'].median() else '↑'} Since last purchase",
+              delta_color="inverse")
 with kpi3:
-    st.metric(
-        "Avg Orders/Customer",
-        value=f"{avg_frequency:.1f}",
-        delta=mom_orders_delta,
-    )
-
+    st.metric("Avg Orders/Customer", value=f"{avg_frequency:.1f}", delta=mom_orders_delta)
 with kpi4:
-    st.metric(
-        "Avg Spend/Customer",
-        value=f"£{avg_monetary:,.2f}",
-        delta=None,
-    )
-
+    st.metric("Avg Spend/Customer", value=f"£{avg_monetary:,.2f}")
 with kpi5:
-    st.metric(
-        "Total Revenue",
-        value=f"£{total_revenue:,.0f}",
-        delta=mom_rev_delta,
-    )
-
-st.divider()
+    st.metric("Total Revenue", value=f"£{total_revenue:,.0f}", delta=mom_rev_delta)
 
 # ---- Segment Distribution Charts ----
+st.markdown(section_header("🧩 Segment Distribution"), unsafe_allow_html=True)
+
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🧩 Customer Distribution by Segment")
-
-    # Donut chart
     fig_donut = px.pie(
         segment_summary,
         names="Segment",
         values="Customer_Count",
-        hole=0.5,
+        hole=0.55,
         color_discrete_sequence=px.colors.qualitative.Bold,
         title="% of Customers per Segment",
     )
@@ -103,17 +77,18 @@ with col1:
         textposition="outside",
         textinfo="percent+label",
         hovertemplate="<b>%{label}</b><br>Customers: %{value:,}<br>Percentage: %{percent}<extra></extra>",
+        marker=dict(line=dict(color='white', width=2)),
     )
     fig_donut.update_layout(
         height=450,
         showlegend=False,
-        margin=dict(t=30, b=10, l=10, r=10),
+        margin=dict(t=40, b=10, l=10, r=10),
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=11),
     )
     st.plotly_chart(fig_donut, use_container_width=True)
 
 with col2:
-    st.subheader("💰 Revenue Contribution by Segment")
-
     fig_bar = px.bar(
         segment_summary.sort_values("Total_Revenue", ascending=True),
         y="Segment",
@@ -128,29 +103,38 @@ with col2:
         texttemplate="%{text}%",
         textposition="outside",
         hovertemplate="<b>%{y}</b><br>Revenue: £%{x:,.0f}<br>% of Total: %{text}%<extra></extra>",
+        marker=dict(line=dict(color='white', width=1)),
     )
     fig_bar.update_layout(
         height=450,
         showlegend=False,
         xaxis_title="Total Revenue (£)",
         yaxis_title=None,
-        margin=dict(t=30, b=10, l=10, r=40),
+        margin=dict(t=40, b=10, l=10, r=40),
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=11),
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-st.divider()
-
 # ---- Segment Metrics Comparison ----
-st.subheader("📈 Segment Metrics Comparison")
+st.markdown(section_header("📈 Segment Metrics Comparison"), unsafe_allow_html=True)
 
 metrics_to_show = st.multiselect(
     "Select metrics to compare:",
     options=["Avg_Recency_Days", "Avg_Frequency", "Avg_Monetary", "Customer_Count"],
     default=["Avg_Recency_Days", "Avg_Frequency", "Avg_Monetary"],
+    key="segment_metrics_select",
 )
 
 if metrics_to_show:
     fig_metrics = go.Figure()
+
+    colors_map = {
+        "Avg_Recency_Days": "#3B82F6",
+        "Avg_Frequency": "#10B981",
+        "Avg_Monetary": "#F59E0B",
+        "Customer_Count": "#FF4B4B",
+    }
 
     for metric in metrics_to_show:
         display_name = metric.replace("_", " ").replace("Avg", "Avg").title()
@@ -159,6 +143,7 @@ if metrics_to_show:
                 name=display_name,
                 x=segment_summary["Segment"],
                 y=segment_summary[metric],
+                marker_color=colors_map.get(metric, "#94A3B8"),
                 hovertemplate=f"<b>%{{x}}</b><br>{display_name}: %{{y:,.1f}}<extra></extra>",
             )
         )
@@ -169,15 +154,16 @@ if metrics_to_show:
         xaxis_title="Segment",
         yaxis_title="Value",
         legend_title="Metric",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         hovermode="x unified",
         margin=dict(t=10, b=80, l=50, r=20),
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=11),
     )
     st.plotly_chart(fig_metrics, use_container_width=True)
 
-st.divider()
-
 # ---- Detailed Segment Table ----
-st.subheader("📋 Detailed Segment Breakdown")
+st.markdown(section_header("📋 Detailed Segment Breakdown"), unsafe_allow_html=True)
 
 display_cols = [
     "Segment", "Customer_Count", "Avg_Recency_Days", "Avg_Frequency",

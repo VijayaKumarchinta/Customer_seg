@@ -9,8 +9,9 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-st.title("🔬 RFM Analysis")
-st.markdown("### Recency · Frequency · Monetary — the three dimensions of customer value")
+from utils.ui_components import hero_header, section_header
+
+st.markdown(hero_header("🔬 RFM Analysis", "Recency · Frequency · Monetary — the three dimensions of customer value"), unsafe_allow_html=True)
 
 # ---- Ensure data is loaded ----
 if "customer_df" not in st.session_state:
@@ -33,18 +34,14 @@ with st.expander("📖 What is RFM Analysis?", expanded=False):
 
     - **R - Recency**: How recently did the customer purchase? (days since last transaction)
       - *Lower is better* — recent buyers are more likely to buy again.
-
     - **F - Frequency**: How often do they purchase? (number of transactions)
       - *Higher is better* — frequent buyers are loyal and engaged.
-
     - **M - Monetary**: How much do they spend? (total spend in £)
       - *Higher is better* — big spenders drive revenue.
 
     Each customer gets a score (1-5) in each dimension, which is used to assign them to behavioral segments
     like "Champions", "At Risk", or "Lost".
     """)
-
-st.divider()
 
 # ---- Tabbed layout ----
 tab1, tab2, tab3, tab4 = st.tabs([
@@ -58,15 +55,16 @@ tab1, tab2, tab3, tab4 = st.tabs([
 # TAB 1: RFM Scatter Plot
 # ================================================================
 with tab1:
-    st.subheader("Interactive RFM Scatter Plot")
+    st.markdown(section_header("Interactive RFM Scatter Plot"), unsafe_allow_html=True)
 
     col1, col2 = st.columns([3, 1])
 
     with col2:
-        x_axis = st.selectbox("X-axis", ["Recency", "Frequency", "Monetary"], index=0)
-        y_axis = st.selectbox("Y-axis", ["Frequency", "Monetary", "Recency"], index=1)
-        size_by = st.selectbox("Bubble size", ["Monetary", "Frequency", "Recency"], index=0)
+        x_axis = st.selectbox("X-axis", ["Recency", "Frequency", "Monetary"], index=0, key="rfm_x_axis")
+        y_axis = st.selectbox("Y-axis", ["Frequency", "Monetary", "Recency"], index=1, key="rfm_y_axis")
+        size_by = st.selectbox("Bubble size", ["Monetary", "Frequency", "Recency"], index=0, key="rfm_bubble_size")
         max_points = st.slider("Max customers to show", 500, 5000, 1500, step=100,
+                               key="rfm_max_points",
                                help="Limit points for better performance. Full data is used for filtering.")
 
     # Sample for performance
@@ -89,15 +87,19 @@ with tab1:
             hovermode="closest",
             xaxis_title=x_axis,
             yaxis_title=y_axis,
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
                 y=1.02,
                 xanchor="right",
                 x=1,
+                bgcolor='rgba(255,255,255,0.8)',
             ),
         )
         fig_scatter.update_traces(
+            marker=dict(line=dict(color='white', width=0.5), opacity=0.75),
             hovertemplate=(
                 "<b>CustomerID:</b> %{customdata[0]}<br>"
                 f"<b>{x_axis}:</b> %{{x:,.0f}}<br>"
@@ -109,14 +111,13 @@ with tab1:
         )
         st.plotly_chart(fig_scatter, use_container_width=True)
 
-    # Segment counts in this view
     st.caption(f"Showing {min(max_points, len(customer_df)):,} of {len(customer_df):,} customers — {plot_df['Segment'].nunique()} segments visible")
 
 # ================================================================
 # TAB 2: Segment Profiles (Radar/Polar charts)
 # ================================================================
 with tab2:
-    st.subheader("Segment Profile Comparison")
+    st.markdown(section_header("Segment Profile Comparison"), unsafe_allow_html=True)
 
     # Normalize segment averages to 0-1 for radar chart
     seg_profile = (
@@ -130,6 +131,7 @@ with tab2:
         "Select segments to compare:",
         options=seg_profile["Segment"].unique().tolist(),
         default=seg_profile["Segment"].unique().tolist()[:4],
+        key="rfm_segments_compare",
     )
 
     if segments_to_compare:
@@ -150,19 +152,20 @@ with tab2:
 
         fig_radar.update_layout(
             polar=dict(
-                radialaxis=dict(
-                    visible=True,
-                    range=[0, 5],
-                ),
+                radialaxis=dict(visible=True, range=[0, 5]),
+                bgcolor='rgba(0,0,0,0)',
             ),
             height=500,
             title="Segment Profiles — RFM Score Comparison",
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
                 y=1.08,
                 xanchor="right",
                 x=1,
+                bgcolor='rgba(255,255,255,0.8)',
             ),
         )
         st.plotly_chart(fig_radar, use_container_width=True)
@@ -175,7 +178,7 @@ with tab2:
 # TAB 3: Cohort Analysis
 # ================================================================
 with tab3:
-    st.subheader("📈 Customer Acquisition Cohorts")
+    st.markdown(section_header("📈 Customer Acquisition Cohorts"), unsafe_allow_html=True)
 
     # Create monthly acquisition cohorts
     clean_df_cohort = clean_df.copy()
@@ -222,15 +225,13 @@ with tab3:
 
     # Convert to percentage of first month
     cohort_pct = cohort_pivot.divide(cohort_pivot[0], axis=0) * 100
-
-    # Format period labels
     cohort_pct.index = cohort_pct.index.astype(str)
 
     fig_cohort = px.imshow(
         cohort_pct.values,
         x=[f"Month {i}" for i in range(cohort_pct.shape[1])],
         y=cohort_pct.index,
-        color_continuous_scale="YlOrRd",
+        color_continuous_scale="RdYlGn",
         aspect="auto",
         title="Customer Retention by Acquisition Cohort (%)",
         labels=dict(
@@ -246,6 +247,8 @@ with tab3:
     fig_cohort.update_layout(
         height=600,
         xaxis=dict(side="bottom"),
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=11),
     )
 
     fig_cohort.update_traces(
@@ -254,27 +257,23 @@ with tab3:
 
     st.plotly_chart(fig_cohort, use_container_width=True)
 
-    st.caption("Reading: Each row shows a cohort of customers who first purchased that month. "
-               "The percentages show how many of them returned in subsequent months. "
-               "Values drop over time but stabilize for engaged customers.")
+    st.caption("Each row shows a cohort of customers who first purchased that month. "
+               "The percentages show how many returned in subsequent months.")
 
 # ================================================================
 # TAB 4: K-Means Explorer
 # ================================================================
 with tab4:
-    st.subheader("🧮 K-Means Clustering Explorer")
+    st.markdown(section_header("🧮 K-Means Clustering Explorer"), unsafe_allow_html=True)
 
     from utils.segmentation import perform_kmeans_clustering, find_optimal_k
 
     k = st.session_state.get("n_clusters", 5)
-
-    # Run K-Means
     kmeans_df = perform_kmeans_clustering(customer_df, n_clusters=k)
 
     col1, col2 = st.columns(2)
 
     with col1:
-        # Cluster distribution
         cluster_dist = kmeans_df["Cluster_Segment"].value_counts().reset_index()
         cluster_dist.columns = ["Segment", "Count"]
 
@@ -292,6 +291,8 @@ with tab4:
             showlegend=False,
             xaxis_title=None,
             yaxis_title="Customers",
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
         )
         fig_cluster_bar.update_traces(
             hovertemplate="<b>%{x}</b><br>Customers: %{y:,}<extra></extra>"
@@ -299,7 +300,6 @@ with tab4:
         st.plotly_chart(fig_cluster_bar, use_container_width=True)
 
     with col2:
-        # Elbow method
         st.subheader("Optimal K — Elbow Method")
 
         with st.spinner("Computing elbow curve..."):
@@ -325,7 +325,7 @@ with tab4:
                 y=elbow_data["silhouette"],
                 mode="lines+markers",
                 name="Silhouette Score",
-                line=dict(color="#4B8BFF", width=3, dash="dash"),
+                line=dict(color="#3B82F6", width=3, dash="dash"),
                 marker=dict(size=8),
                 yaxis="y2",
             )
@@ -340,9 +340,11 @@ with tab4:
                 title="Silhouette Score",
                 side="right",
                 overlaying="y",
-                color="#4B8BFF",
+                color="#3B82F6",
                 range=[0, 1],
             ),
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
@@ -354,12 +356,10 @@ with tab4:
         )
         st.plotly_chart(fig_elbow, use_container_width=True)
 
-        # Best K suggestion
         best_k = elbow_data["k"][np.argmax(elbow_data["silhouette"])]
         st.info(
             f"💡 **Suggested K = {best_k}** "
             f"(highest Silhouette Score: {max(elbow_data['silhouette']):.3f}). "
-            f"The elbow point typically suggests K = {elbow_data['k'][np.argmin(np.diff(elbow_data['inertia']))]}. "
             f"Adjust the slider in the sidebar to experiment with different K values."
         )
 
@@ -383,6 +383,8 @@ with tab4:
     )
     fig_3d.update_layout(
         height=600,
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=11),
         scene=dict(
             xaxis_title="Recency (days)",
             yaxis_title="Frequency (orders)",

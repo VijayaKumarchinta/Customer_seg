@@ -9,8 +9,9 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-st.title("🔮 Predictive Analytics")
-st.markdown("### Customer Lifetime Value · Churn Risk · Month-over-Month Trends")
+from utils.ui_components import hero_header, section_header
+
+st.markdown(hero_header("🔮 Predictive Analytics", "Customer Lifetime Value · Churn Risk · Month-over-Month Trends"), unsafe_allow_html=True)
 
 # ---- Ensure data is loaded ----
 if "customer_df" not in st.session_state:
@@ -55,29 +56,19 @@ tab1, tab2, tab3, tab4 = st.tabs([
 # TAB 1: CLV Analysis
 # ================================================================
 with tab1:
-    st.subheader("💰 Customer Lifetime Value — Prediction")
+    st.markdown(section_header("💰 Customer Lifetime Value — Prediction"), unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(
-            "Avg Predicted CLV",
-            f"£{combined_df['Predicted_CLV'].mean():,.2f}",
-            delta=f"R² = {clv_model_metrics.get('r2', 'N/A')}",
-        )
+        st.metric("Avg Predicted CLV", f"£{combined_df['Predicted_CLV'].mean():,.2f}",
+                  delta=f"R² = {clv_model_metrics.get('r2', 'N/A')}")
     with col2:
-        st.metric(
-            "Median CLV",
-            f"£{combined_df['Predicted_CLV'].median():,.2f}",
-        )
+        st.metric("Median CLV", f"£{combined_df['Predicted_CLV'].median():,.2f}")
     with col3:
         high_clv_pct = (combined_df["is_high_clv"].sum() / len(combined_df) * 100) if "is_high_clv" in combined_df.columns else 50
-        st.metric(
-            "High-Value Customers",
-            f"{high_clv_pct:.0f}%",
-            delta=f"{combined_df['is_high_clv'].sum():,} customers" if "is_high_clv" in combined_df.columns else None,
-        )
+        st.metric("High-Value Customers", f"{high_clv_pct:.0f}%",
+                  delta=f"{combined_df['is_high_clv'].sum():,} customers" if "is_high_clv" in combined_df.columns else None)
 
-    # CLV distribution
     col1, col2 = st.columns(2)
 
     with col1:
@@ -92,14 +83,20 @@ with tab1:
         fig_clv_hist.add_vline(
             x=combined_df["Predicted_CLV"].median(),
             line_dash="dash",
-            line_color="blue",
+            line_color="#3B82F6",
             annotation_text=f"Median: £{combined_df['Predicted_CLV'].median():,.0f}",
+            annotation_position="top",
         )
-        fig_clv_hist.update_layout(height=400, xaxis_range=[0, combined_df["Predicted_CLV"].quantile(0.95)])
+        fig_clv_hist.update_layout(
+            height=400,
+            xaxis_range=[0, combined_df["Predicted_CLV"].quantile(0.95)],
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
+            margin=dict(t=40, b=10, l=10, r=10),
+        )
         st.plotly_chart(fig_clv_hist, use_container_width=True)
 
     with col2:
-        # CLV by segment
         clv_by_segment = (
             combined_df.groupby("Segment")["Predicted_CLV"]
             .agg(["mean", "median", "count"])
@@ -112,22 +109,27 @@ with tab1:
             clv_by_segment,
             x="Segment",
             y="mean",
-            error_y=clv_by_segment["mean"] * 0.3,  # approximate std
+            error_y=clv_by_segment["mean"] * 0.3,
             color="Segment",
             color_discrete_sequence=px.colors.qualitative.Bold,
             title="Average Predicted CLV by Segment",
             labels={"mean": "Avg CLV (£)", "Segment": ""},
             text_auto=".0f",
         )
-        fig_clv_seg.update_layout(height=400, showlegend=False)
+        fig_clv_seg.update_layout(
+            height=400,
+            showlegend=False,
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
+            margin=dict(t=40, b=80, l=10, r=10),
+        )
         fig_clv_seg.update_traces(
-            texttemplate="£%{text:,.0f}",
+            texttemplate="£%{y:,.0f}",
             hovertemplate="<b>%{x}</b><br>Avg CLV: £%{y:,.2f}<br>Customers: %{customdata[0]:,}<extra></extra>",
             customdata=clv_by_segment[["count"]],
         )
         st.plotly_chart(fig_clv_seg, use_container_width=True)
 
-    # Model info expander
     with st.expander("📖 About the CLV Model"):
         st.markdown(f"""
         **Model:** Linear Regression
@@ -143,16 +145,14 @@ with tab1:
             direction = "📈" if coef > 0 else "📉"
             st.markdown(f"- {direction} **{feat}**: {coef:.4f}")
 
-        st.markdown("""
-        **Interpretation:** Positive coefficients increase predicted CLV (e.g., higher Frequency = higher CLV).
-        Negative coefficients decrease it (e.g., higher Recency = lower CLV).
-        """)
+        st.markdown("""**Interpretation:** Positive coefficients increase predicted CLV (e.g., higher Frequency = higher CLV).
+        Negative coefficients decrease it (e.g., higher Recency = lower CLV).""")
 
 # ================================================================
 # TAB 2: Churn Prediction
 # ================================================================
 with tab2:
-    st.subheader("⚠️ Churn Probability — Risk Assessment")
+    st.markdown(section_header("⚠️ Churn Probability — Risk Assessment"), unsafe_allow_html=True)
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -172,17 +172,16 @@ with tab2:
     col1, col2 = st.columns(2)
 
     with col1:
-        # Churn probability distribution
         fig_churn_hist = px.histogram(
             combined_df,
             x="Churn_Probability",
             nbins=40,
             color="Churn_Risk_Level",
             color_discrete_map={
-                "Low Risk": "#28a745",
-                "Medium Risk": "#ffc107",
-                "High Risk": "#dc3545",
-                "Critical": "#6d0101",
+                "Low Risk": "#10B981",
+                "Medium Risk": "#F59E0B",
+                "High Risk": "#FF4B4B",
+                "Critical": "#7F1D1D",
             },
             title="Churn Probability Distribution",
             labels={"Churn_Probability": "Predicted Churn Probability"},
@@ -193,15 +192,18 @@ with tab2:
             xaxis_title="Churn Probability",
             yaxis_title="Number of Customers",
             legend_title="Risk Level",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
+            margin=dict(t=40, b=10, l=10, r=10),
         )
-        fig_churn_hist.add_vline(x=0.3, line_dash="dash", line_color="orange",
-                                  annotation_text="Medium Risk Threshold")
-        fig_churn_hist.add_vline(x=0.7, line_dash="dash", line_color="red",
-                                  annotation_text="Critical Threshold")
+        fig_churn_hist.add_vline(x=0.3, line_dash="dash", line_color="#F59E0B",
+                                  annotation_text="Medium Risk", annotation_position="top")
+        fig_churn_hist.add_vline(x=0.7, line_dash="dash", line_color="#FF4B4B",
+                                  annotation_text="Critical", annotation_position="top")
         st.plotly_chart(fig_churn_hist, use_container_width=True)
 
     with col2:
-        # Churn risk by segment
         churn_by_segment = (
             combined_df.groupby("Segment")
             .agg(
@@ -221,11 +223,18 @@ with tab2:
             color="Avg_Churn_Risk",
             color_continuous_scale="RdYlGn_r",
             orientation="h",
-            title="Average Churn Risk by Segment (sorted highest to lowest)",
+            title="Average Churn Risk by Segment",
             labels={"Avg_Churn_Risk": "Avg Churn Probability", "Segment": ""},
             text_auto=".0%",
         )
-        fig_churn_seg.update_layout(height=450, showlegend=False, xaxis_range=[0, 1])
+        fig_churn_seg.update_layout(
+            height=450,
+            showlegend=False,
+            xaxis_range=[0, 1],
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
+            margin=dict(t=40, b=10, l=10, r=40),
+        )
         fig_churn_seg.update_traces(
             hovertemplate="<b>%{y}</b><br>Avg Churn Risk: %{x:.1%}<br>Customers: %{customdata[0]:,}<br>Critical: %{customdata[1]:.0f}%<extra></extra>",
             customdata=churn_by_segment[["Customer_Count", "Critical_Pct"]],
@@ -233,7 +242,7 @@ with tab2:
         st.plotly_chart(fig_churn_seg, use_container_width=True)
 
     # Churn risk summary table
-    st.subheader("📋 Churn Risk Summary")
+    st.markdown(section_header("📋 Churn Risk Summary"), unsafe_allow_html=True)
     risk_summary = (
         combined_df.groupby("Churn_Risk_Level")
         .agg(
@@ -252,7 +261,6 @@ with tab2:
 
     st.dataframe(risk_summary, use_container_width=True, hide_index=True)
 
-    # Model info
     with st.expander("📖 About the Churn Model"):
         st.markdown(f"""
         **Model:** Logistic Regression (balanced class weights)
@@ -275,12 +283,9 @@ with tab2:
 # TAB 3: CLV × Churn Matrix
 # ================================================================
 with tab3:
-    st.subheader("🔄 CLV vs Churn Risk — Strategic Matrix")
+    st.markdown(section_header("🔄 CLV vs Churn Risk — Strategic Matrix"), unsafe_allow_html=True)
 
-    st.markdown("""
-    This quadrant chart places every customer by their **predicted CLV** and **churn probability**.
-    Use it to prioritize marketing actions:
-    """)
+    st.markdown("This quadrant chart places every customer by their **predicted CLV** and **churn probability**.")
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -288,20 +293,19 @@ with tab3:
         st.caption("Protect & nurture")
     with col2:
         st.markdown("**🔵 High CLV · High Churn**")
-        st.caption("🚨 Critical — retain immediately")
+        st.caption("🚨 Retain immediately")
     with col3:
         st.markdown("**🟡 Low CLV · Low Churn**")
         st.caption("Grow & upsell")
     with col4:
         st.markdown("**🔴 Low CLV · High Churn**")
-        st.caption("Evaluate — may not be worth saving")
+        st.caption("Evaluate ROI")
 
-    # Sample for performance
     max_dots = st.slider("Max customers to show", 500, 5000, 2000, step=100,
+                         key="matrix_max_dots",
                          help="More points = slower rendering. Full data used for calculations.")
     plot_sample = combined_df.sample(n=min(max_dots, len(combined_df)), random_state=42)
 
-    # Determine quadrant thresholds
     clv_median = combined_df["Predicted_CLV"].median()
     churn_median = combined_df["Churn_Probability"].median()
 
@@ -321,26 +325,31 @@ with tab3:
         },
     )
 
-    # Add quadrant lines
     fig_matrix.add_hline(y=churn_median, line_dash="dash", line_color="gray", opacity=0.5)
     fig_matrix.add_vline(x=clv_median, line_dash="dash", line_color="gray", opacity=0.5)
 
-    # Add quadrant labels
     fig_matrix.add_annotation(x=clv_median * 1.6, y=churn_median * 0.4,
-                               text="🟢 Protect & Nurture", showarrow=False, font=dict(color="green", size=11))
+                               text="🟢 Protect & Nurture", showarrow=False,
+                               font=dict(color="#10B981", size=12, family="Arial Black"))
     fig_matrix.add_annotation(x=clv_median * 0.4, y=churn_median * 0.4,
-                               text="🟡 Grow & Upsell", showarrow=False, font=dict(color="orange", size=11))
+                               text="🟡 Grow & Upsell", showarrow=False,
+                               font=dict(color="#F59E0B", size=12, family="Arial Black"))
     fig_matrix.add_annotation(x=clv_median * 1.6, y=churn_median * 1.5,
-                               text="🔵 Retain Immediately", showarrow=False, font=dict(color="blue", size=11))
+                               text="🔵 Retain Immediately", showarrow=False,
+                               font=dict(color="#3B82F6", size=12, family="Arial Black"))
     fig_matrix.add_annotation(x=clv_median * 0.4, y=churn_median * 1.5,
-                               text="🔴 Evaluate", showarrow=False, font=dict(color="red", size=11))
+                               text="🔴 Evaluate", showarrow=False,
+                               font=dict(color="#FF4B4B", size=12, family="Arial Black"))
 
     fig_matrix.update_layout(
         height=600,
         xaxis_type="log",
         hovermode="closest",
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=11),
     )
     fig_matrix.update_traces(
+        marker=dict(line=dict(color='white', width=0.5), opacity=0.7),
         hovertemplate=(
             "<b>CustomerID:</b> %{customdata[0]}<br>"
             "CLV: £%{customdata[3]:,.2f}<br>"
@@ -351,8 +360,8 @@ with tab3:
     )
     st.plotly_chart(fig_matrix, use_container_width=True)
 
-    # Segment counts in each quadrant
-    st.subheader("📊 Quadrant Summary")
+    # Quadrant summary
+    st.markdown(section_header("📊 Quadrant Summary"), unsafe_allow_html=True)
     quad_data = combined_df.copy()
     quad_data["Quadrant"] = "Unknown"
     quad_data.loc[(quad_data["Predicted_CLV"] >= clv_median) & (quad_data["Churn_Probability"] < churn_median), "Quadrant"] = "🟢 Protect & Nurture"
@@ -386,63 +395,43 @@ with tab3:
 # TAB 4: MoM Performance
 # ================================================================
 with tab4:
-    st.subheader("📈 Month-over-Month Performance")
+    st.markdown(section_header("📈 Month-over-Month Performance"), unsafe_allow_html=True)
 
     if mom_metrics.get("current_month") is None:
         st.warning("Not enough monthly data to compute MoM trends.")
         st.stop()
 
-    # MoM KPI cards
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         delta_str = f"{mom_metrics['revenue_delta']:+.1f}%" if mom_metrics["revenue_delta"] is not None else None
-        st.metric(
-            f"Revenue ({mom_metrics['current_month']})",
-            f"£{mom_metrics['current_revenue']:,.0f}",
-            delta=delta_str,
-            delta_color="normal",
-        )
-
+        st.metric(f"Revenue ({mom_metrics['current_month']})",
+                  f"£{mom_metrics['current_revenue']:,.0f}", delta=delta_str)
     with col2:
         delta_str = f"{mom_metrics['orders_delta']:+.1f}%" if mom_metrics["orders_delta"] is not None else None
-        st.metric(
-            f"Orders ({mom_metrics['current_month']})",
-            f"{mom_metrics['current_orders']:,}",
-            delta=delta_str,
-            delta_color="normal",
-        )
-
+        st.metric(f"Orders ({mom_metrics['current_month']})",
+                  f"{mom_metrics['current_orders']:,}", delta=delta_str)
     with col3:
         delta_str = f"{mom_metrics['customers_delta']:+.1f}%" if mom_metrics["customers_delta"] is not None else None
-        st.metric(
-            f"Customers ({mom_metrics['current_month']})",
-            f"{mom_metrics['current_customers']:,}",
-            delta=delta_str,
-            delta_color="normal",
-        )
-
+        st.metric(f"Customers ({mom_metrics['current_month']})",
+                  f"{mom_metrics['current_customers']:,}", delta=delta_str)
     with col4:
         delta_str = f"{mom_metrics['aov_delta']:+.1f}%" if mom_metrics["aov_delta"] is not None else None
-        st.metric(
-            f"Avg Order Value ({mom_metrics['current_month']})",
-            f"£{mom_metrics['current_aov']:.2f}",
-            delta=delta_str,
-            delta_color="normal",
-        )
+        st.metric(f"Avg Order Value ({mom_metrics['current_month']})",
+                  f"£{mom_metrics['current_aov']:.2f}", delta=delta_str)
 
     st.caption(f"Comparing {mom_metrics['current_month']} vs {mom_metrics['prev_month']}")
 
-    # Monthly trends chart
     monthly_df = mom_metrics["monthly_data"]
 
     if len(monthly_df) > 1:
-        st.subheader("📊 Historical Monthly Trends")
+        st.markdown(section_header("📊 Historical Monthly Trends"), unsafe_allow_html=True)
 
         metric_choice = st.selectbox(
             "Select metric to chart:",
             options=["Revenue", "Orders", "Customers", "AvgOrderValue"],
             index=0,
+            key="mom_metric_select",
         )
 
         y_label_map = {
@@ -462,7 +451,6 @@ with tab4:
             labels={"Month": "", metric_choice: y_label_map.get(metric_choice, metric_choice)},
         )
 
-        # Add trendline
         if len(monthly_df) >= 3:
             fig_trend.add_trace(
                 go.Scatter(
@@ -470,17 +458,18 @@ with tab4:
                     y=monthly_df[metric_choice].rolling(3, min_periods=1).mean(),
                     mode="lines",
                     name="3-Month Rolling Avg",
-                    line=dict(color="#4B8BFF", width=2, dash="dot"),
+                    line=dict(color="#3B82F6", width=2, dash="dot"),
                 )
             )
 
         fig_trend.update_layout(
             height=450,
             hovermode="x unified",
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(size=11),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
 
-        # Format hover based on metric
         if metric_choice in ("Revenue", "AvgOrderValue"):
             fig_trend.update_traces(hovertemplate="%{x}<br>£%{y:,.2f}<extra></extra>")
         else:
@@ -489,7 +478,7 @@ with tab4:
         st.plotly_chart(fig_trend, use_container_width=True)
 
         # Full monthly table
-        st.subheader("📋 Monthly Performance Table")
+        st.markdown(section_header("📋 Monthly Performance Table"), unsafe_allow_html=True)
         display_monthly = monthly_df.copy()
         display_monthly.columns = ["Month", "Revenue (£)", "Orders", "Customers", "Avg Order Value (£)"]
         display_monthly["Revenue (£)"] = display_monthly["Revenue (£)"].apply(lambda x: f"£{x:,.2f}")

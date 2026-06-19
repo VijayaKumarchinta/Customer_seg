@@ -295,7 +295,7 @@ def compute_mom_metrics(clean_df: pd.DataFrame) -> dict:
 
     # Monthly aggregation
     monthly = (
-        df.groupby("Month")
+        df.groupby("Month", sort=False)
         .agg(
             Revenue=("TotalPrice", "sum"),
             Orders=("InvoiceNo", "nunique"),

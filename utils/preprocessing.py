@@ -26,60 +26,48 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame
         Cleaned transaction data.
     """
+    initial_count = len(df)
     df = df.copy()
 
-    initial_count = len(df)
+    # ── Build a single composite filter mask (avoids multiple df copies) ──
+    # Column names are already normalized by data_loader.py before caching to parquet
+    mask = pd.Series(True, index=df.index)
 
-    # Remove rows without CustomerID
-    df = df.dropna(subset=["CustomerID"])
+    if "CustomerID" in df.columns:
+        mask &= df["CustomerID"].notna()
+    else:
+        # No CustomerID column at all — return empty with expected columns
+        return df.head(0)
+
+    if "InvoiceNo" in df.columns:
+        mask &= ~df["InvoiceNo"].astype(str).str.startswith("C", na=False)
+
+    if "Quantity" in df.columns:
+        mask &= df["Quantity"] > 0
+
+    if "UnitPrice" in df.columns:
+        mask &= df["UnitPrice"] > 0
+
+    if "Description" in df.columns:
+        mask &= df["Description"].notna()
+
+    # Apply the composite mask once
+    df = df.loc[mask].copy()
+
+    # ── Type conversions ──
     df["CustomerID"] = df["CustomerID"].astype(int).astype(str)
-
-    # Remove cancelled transactions
-    df = df[~df["InvoiceNo"].astype(str).str.startswith("C", na=False)]
-
-    # Remove rows with invalid quantities and prices
-    df = df[(df["Quantity"] > 0) & (df["UnitPrice"] > 0)]
-
-    # Remove rows without description
-    df = df.dropna(subset=["Description"])
-
-    # Remove outliers: Quantity above 99th percentile (bulk orders)
-    q99 = df["Quantity"].quantile(0.99)
-    df = df[df["Quantity"] <= q99]
-
-    # Remove outliers: UnitPrice above 99th percentile
-    p99 = df["UnitPrice"].quantile(0.99)
-    df = df[df["UnitPrice"] <= p99]
-
-    # Ensure InvoiceDate is datetime
     df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"])
+    df["InvoiceNo"] = df["InvoiceNo"].astype(str)
+    df["StockCode"] = df["StockCode"].astype(str)
+    df["Description"] = df["Description"].astype(str)
 
-    # Create a total spend column
+    # ── Create total spend column ──
     df["TotalPrice"] = df["Quantity"] * df["UnitPrice"]
 
-    # --- Ensure all ID/object columns are string for pyarrow compatibility ---
-    # The ucimlrepo may return InvoiceNo as 'Invoice' with mixed types.
-    # PyArrow serialization (used by Streamlit's @st.cache_data) requires consistent types.
-    
-    # Find and convert any invoice-related column
-    invoice_col = None
-    for col in df.columns:
-        if "invoice" in col.lower():
-            invoice_col = col
-            break
-    if invoice_col:
-        df[invoice_col] = df[invoice_col].astype(str)
-        # Rename to InvoiceNo if it's named differently (e.g., just 'Invoice')
-        if invoice_col != "InvoiceNo":
-            df.rename(columns={invoice_col: "InvoiceNo"}, inplace=True)
-
-    # Ensure StockCode is string
-    if "StockCode" in df.columns:
-        df["StockCode"] = df["StockCode"].astype(str)
-
-    # Ensure Description is string
-    if "Description" in df.columns:
-        df["Description"] = df["Description"].astype(str)
+    # ── Remove outliers using quantiles (single-pass quantile computation) ──
+    q_qty = df["Quantity"].quantile(0.99)
+    p_price = df["UnitPrice"].quantile(0.99)
+    df = df[(df["Quantity"] <= q_qty) & (df["UnitPrice"] <= p_price)]
 
     removed = initial_count - len(df)
     print(f"[CLEAN] Cleaned data: removed {removed:,} rows ({removed/initial_count:.1%})")
@@ -109,7 +97,7 @@ def create_customer_summary(df: pd.DataFrame) -> pd.DataFrame:
     snapshot_date = df["InvoiceDate"].max() + pd.Timedelta(days=1)
 
     customer_summary = (
-        df.groupby("CustomerID")
+        df.groupby("CustomerID", sort=False)
         .agg(
             Monetary=("TotalPrice", "sum"),
             Frequency=("InvoiceNo", "nunique"),

@@ -31,3 +31,12 @@ data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Server / process logs
+*.log
+
+# Windows reserved device names
+nul
+con
+prn
+lpt*
