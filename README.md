@@ -305,16 +305,13 @@ Your app will be live at `https://your-username-your-repo-name.streamlit.app` wi
 
 ## 📸 Screenshots
 
-> ⚠️ *Add screenshots here after running the dashboard. Suggested images:*
-
 | View | Description |
 |------|-------------|
-| `screenshots/home.png` | Home page with KPI cards and segment table |
-| `screenshots/segment_overview.png` | Donut chart + revenue bars + metric comparison |
-| `screenshots/rfm_scatter.png` | Interactive RFM scatter plot colored by segment |
-| `screenshots/cohort_heatmap.png` | Monthly cohort retention heatmap |
-| `screenshots/kmeans_3d.png` | 3D K-Means cluster visualization |
-| `screenshots/recommendations.png` | Business recommendations with campaign planner |
+| ![Home Page](screenshots/home.png) | Home page with KPI cards, segment overview table, and download section |
+| ![Segment Overview](screenshots/segment_overview.png) | Donut chart, revenue bar chart, and metric comparison |
+| ![RFM Analysis](screenshots/rfm_analysis.png) | Interactive scatter plots, radar profiles, cohort heatmap, and K-Means explorer |
+| ![Business Recommendations](screenshots/recommendations.png) | Priority scoring, segment deep dive, and campaign planner |
+| ![Predictive Analytics](screenshots/predictive.png) | CLV metrics, churn analysis, strategic matrix, and MoM trends |
 
 ## 📄 License
 
