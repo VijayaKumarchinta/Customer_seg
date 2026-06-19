@@ -5,14 +5,14 @@
 **RFM Analysis · K-Means Clustering · Interactive Visualizations**
 
 [![CI](https://github.com/VijayaKumarchinta/Customer_seg/actions/workflows/ci.yml/badge.svg)](https://github.com/VijayaKumarchinta/Customer_seg/actions/workflows/ci.yml)
-[![Streamlit](https://img.shields.io/badge/Built%20with-Streamline-red?logo=streamlit&logoColor=white)](https://streamlit.io)
+[![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-red?logo=streamlit&logoColor=white)](https://streamlit.io)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Dataset](https://img.shields.io/badge/Dataset-UCI%20Online%20Retail%20II-orange)](https://archive.ics.uci.edu/dataset/502/online+retail+ii)
 
 **Analyze 1M+ real transactions from a UK-based online retailer. Segment customers by behavioral patterns using RFM analysis and K-Means clustering, and get data-driven marketing recommendations — all in an interactive dashboard.**
 
-[🚀 Live Demo](https://customersegme.streamlit.app/) · [📖 Dataset Details](https://archive.ics.uci.edu/dataset/502/online+retail+ii) · [🐛 Report Bug](https://github.com/your-username/customer-segmentation-dashboard/issues)
+[🚀 Live Demo](https://customersegme.streamlit.app/) · [📖 Dataset Details](https://archive.ics.uci.edu/dataset/502/online+retail+ii) · [🐛 Report Bug](https://github.com/VijayaKumarchinta/Customer_seg/issues)
 
 </div>
 
@@ -137,8 +137,8 @@ The pipeline handles real-world data quality issues:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/customer-segmentation-dashboard.git
-cd customer-segmentation-dashboard
+git clone https://github.com/VijayaKumarchinta/Customer_seg.git
+cd Customer_seg
 
 # 2. (Recommended) Create and activate a virtual environment
 python -m venv venv
@@ -209,14 +209,25 @@ customer-segmentation-dashboard/
 ├── app.py                           # Main entry point — page config, data loading, sidebar
 ├── requirements.txt                 # Python dependencies
 ├── README.md                        # This file
+├── .github/
+│   └── workflows/
+│       └── ci.yml                   # CI/CD pipeline (lint, test, deploy)
+├── ci/
+│   ├── lint_check.py                # CI lint script (syntax, imports, config)
+│   └── pipeline_smoke_test.py       # CI end-to-end pipeline test
 ├── utils/
+│   ├── __init__.py
 │   ├── data_loader.py               # Dataset download, caching, metadata
 │   ├── preprocessing.py             # Data cleaning and customer aggregation
-│   └── segmentation.py              # RFM scoring, K-Means, segment labeling, summary
+│   ├── segmentation.py              # RFM scoring, K-Means, segment labeling, summary
+│   ├── predictive.py                # CLV prediction, churn modeling, MoM metrics
+│   ├── ui_components.py             # Shared UI helpers (hero, section headers)
+│   └── report_generator.py          # PDF report generation (ReportLab)
 ├── pages/
 │   ├── 1_Segment_Overview.py        # Segment distribution, KPIs, revenue analysis
 │   ├── 2_RFM_Analysis.py            # RFM scatter, radar, cohort heatmap, K-Means
-│   └── 3_Business_Recommendations.py # Strategy, campaigns, export, executive summary
+│   ├── 3_Business_Recommendations.py # Strategy, campaigns, export, executive summary
+│   └── 4_Predictive_Analytics.py    # CLV, churn risk, MoM trends
 └── data/
     └── online_retail_II.parquet     # Cached dataset (auto-generated on first run)
 ```
@@ -319,10 +330,10 @@ Contributions are welcome! Here's how to help:
 
 ### Ideas for Improvements
 
-- [ ] Add **Customer Lifetime Value (CLV/LTV)** prediction using linear regression
-- [ ] Add **churn probability** scoring with logistic regression
-- [ ] Add **month-over-month comparison** with delta indicators on KPIs
-- [ ] Add **PDF report generation** (with WeasyPrint or ReportLab)
+- [x] Add **Customer Lifetime Value (CLV/LTV)** prediction using linear regression
+- [x] Add **churn probability** scoring with logistic regression
+- [x] Add **month-over-month comparison** with delta indicators on KPIs
+- [x] Add **PDF report generation** (with ReportLab)
 - [ ] Add **database integration** (PostgreSQL/MySQL) for real-time data
 - [ ] Add **user authentication** for multi-user access
 - [ ] Add **automated email reports** for segment changes
@@ -346,11 +357,11 @@ https://doi.org/10.24432/C5CG6D
 
 ## 📬 Contact
 
-**Your Name** — [your.email@example.com](mailto:your.email@example.com)
+**VijayaKumar chinta**
 
-**GitHub:** [https://github.com/your-username/customer-segmentation-dashboard](https://github.com/your-username/customer-segmentation-dashboard)
+**GitHub:** [https://github.com/VijayaKumarchinta/Customer_seg](https://github.com/VijayaKumarchinta/Customer_seg)
 
-**Project Link:** [https://github.com/your-username/customer-segmentation-dashboard](https://github.com/your-username/customer-segmentation-dashboard)
+**Project Link:** [https://github.com/VijayaKumarchinta/Customer_seg](https://github.com/VijayaKumarchinta/Customer_seg)
 
 ---
 
