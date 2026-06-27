@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 
 from utils.ui_components import hero_header, section_header
 
+
 st.markdown(hero_header("🎯 Business Recommendations", "Data-driven marketing strategies for each customer segment"), unsafe_allow_html=True)
 
 # ---- Ensure data is loaded ----
@@ -263,9 +264,15 @@ with col2:
     )
 
 with col3:
-    if st.button("📄 Generate PDF Report", use_container_width=True):
-        with st.spinner("Generating PDF report..."):
-            from utils.report_generator import generate_report
+    if "rec_pdf_ready" not in st.session_state:
+        st.session_state.rec_pdf_ready = False
+        st.session_state.rec_pdf_data = None
+
+    def _generate_rec_pdf():
+        from utils.report_generator import generate_report
+
+        with st.status("📄 Generating PDF report...", expanded=True) as status:
+            st.write("Compiling segment data and recommendations...")
             pdf_bytes = generate_report(
                 customer_df=customer_df,
                 segment_summary=segment_summary,
@@ -274,16 +281,31 @@ with col3:
                 mom_metrics=st.session_state.get("mom_metrics"),
                 churn_metrics=st.session_state.get("churn_model_metrics"),
             )
-            st.download_button(
-                label="📥 Download PDF Report",
-                data=pdf_bytes,
-                file_name="customer_segmentation_report.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-            )
+            status.update(label="✅ PDF generated successfully!", state="complete")
+
+        st.session_state.rec_pdf_data = pdf_bytes
+        st.session_state.rec_pdf_ready = True
+
+    if st.session_state.rec_pdf_ready:
+        st.download_button(
+            label="📥 Download PDF Report",
+            data=st.session_state.rec_pdf_data,
+            file_name="customer_segmentation_report.pdf",
+            mime="application/pdf",
+            use_container_width=True,
+            type="primary",
+        )
+        if st.button("🔄 Regenerate", key="rec_regenerate", use_container_width=True):
+            st.session_state.rec_pdf_ready = False
+            st.session_state.rec_pdf_data = None
+            st.rerun()
     else:
-        st.info("Click to generate a professional PDF with executive summary, "
-                "segment breakdowns, churn analysis, and recommendations.")
+        st.button(
+            "📥 Generate & Download PDF",
+            type="primary",
+            on_click=_generate_rec_pdf,
+            use_container_width=True,
+        )
 
 # ---- Executive Summary ----
 st.markdown(section_header("📝 Executive Summary"), unsafe_allow_html=True)

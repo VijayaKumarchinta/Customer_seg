@@ -911,26 +911,53 @@ with col2:
 # Download PDF Report section
 st.markdown(section_header("📄 Download Full Analysis Report"), unsafe_allow_html=True)
 
+if "pdf_ready" not in st.session_state:
+    st.session_state.pdf_ready = False
+    st.session_state.pdf_data = None
+
+
+def _generate_pdf():
+    """Generate PDF and store in session state for the download button."""
+    from utils.report_generator import generate_report
+
+    with st.status("📄 Generating PDF report...", expanded=True) as status:
+        st.write("Compiling segment data and KPIs...")
+        pdf_bytes = generate_report(
+            customer_df=customer_df,
+            segment_summary=segment_summary,
+            clean_df=clean_df,
+            data_info=data_info,
+            mom_metrics=mom_metrics,
+            churn_metrics=st.session_state.get("churn_model_metrics"),
+        )
+        status.update(label="✅ PDF generated successfully!", state="complete")
+
+    st.session_state.pdf_data = pdf_bytes
+    st.session_state.pdf_ready = True
+
+
 col1, col2 = st.columns([1, 2])
 with col1:
-    if st.button("📄 Generate PDF Report", type="primary", use_container_width=True):
-        with st.spinner("Generating PDF report..."):
-            from utils.report_generator import generate_report
-            pdf_bytes = generate_report(
-                customer_df=customer_df,
-                segment_summary=segment_summary,
-                clean_df=clean_df,
-                data_info=data_info,
-                mom_metrics=mom_metrics,
-                churn_metrics=st.session_state.get("churn_model_metrics"),
-            )
-            st.download_button(
-                label="📥 Download PDF Report",
-                data=pdf_bytes,
-                file_name="customer_segmentation_report.pdf",
-                mime="application/pdf",
-                use_container_width=True,
-            )
+    if st.session_state.pdf_ready:
+        st.download_button(
+            label="📥 Download PDF Report",
+            data=st.session_state.pdf_data,
+            file_name="customer_segmentation_report.pdf",
+            mime="application/pdf",
+            use_container_width=True,
+            type="primary",
+        )
+        if st.button("🔄 Generate Fresh Copy", use_container_width=True):
+            st.session_state.pdf_ready = False
+            st.session_state.pdf_data = None
+            st.rerun()
+    else:
+        st.button(
+            "📥 Generate & Download PDF",
+            type="primary",
+            on_click=_generate_pdf,
+            use_container_width=True,
+        )
 with col2:
     st.markdown(
         """
