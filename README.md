@@ -341,5 +341,7 @@ https://doi.org/10.24432/C5CG6D
 <div align="center">
 
 **⭐ If you found this project useful, give it a star on GitHub! ⭐**
+  <br><br>
+  <sub>🏠 <a href="https://github.com/VijayaKumarchinta/portfolio">View my complete portfolio</a></sub>
 
 </div>
